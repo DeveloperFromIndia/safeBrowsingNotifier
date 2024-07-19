@@ -1,12 +1,24 @@
 import dotenv from 'dotenv'; dotenv.config();
-import { Telegraf } from 'telegraf';
-import { start } from './commands/user.js';
+import { Scenes, session, Telegraf } from 'telegraf';
+import { start } from './commands/main-commands.js';
+import { getWebsitesList } from './commands/websites-commands.js';
+import { cmd, inlineCmd } from './utils/cmd.js';
+import {
+    addNewWebsiteScene,
+    addNewWebsiteSceneEnterCallback
+} from './commands/scenes/websites-scenes.js';
 
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+const stage = new Scenes.Stage([addNewWebsiteScene]);
 
 const setupBot = () => {
-    bot.command("start", start)
+    bot.use(session());
+    bot.use(stage.middleware());
+
+    bot.start(start);
+    bot.hears(cmd.websites, getWebsitesList)
+    bot.action(inlineCmd.addNewWebsite, addNewWebsiteSceneEnterCallback)
 
     return bot;
 }
