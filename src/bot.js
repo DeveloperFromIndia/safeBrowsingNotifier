@@ -6,9 +6,10 @@ import {
 } from 'telegraf';
 import { start } from './commands/main-commands.js';
 import { 
+    anotherPageInWebsitesList,
     deleteWebsiteById, 
     getWebsiteById, 
-    getWebsitesList
+    getWebsitesList,
 } from './commands/websites-commands.js';
 import { cmd, inlineCmd } from './utils/cmd.js';
 import {
@@ -30,6 +31,8 @@ const setupBot = () => {
     bot.action(inlineCmd.addNewWebsite, addNewWebsiteSceneEnterCallback);
     bot.action(inlineCmd.getWebsiteInfoById, getWebsiteById);
     bot.action(inlineCmd.deleteWebsiteById, deleteWebsiteById);
+    bot.action(inlineCmd.nextWebsitePage, anotherPageInWebsitesList);
+    bot.action(inlineCmd.prevWebsitePage, anotherPageInWebsitesList);
 
     return bot;
 }
