@@ -1,7 +1,6 @@
 export const cmd = {
-    // main page
+    main: "💾 Стастистика",
     websites: "📁 Сайты",
-    settings: "⚙️ Настройки",
     // utils buttons
     backInMainMenu: "Отменить",
     saveSomething: "Сохранить",
@@ -12,6 +11,7 @@ export const cmd = {
 
 export const inlineCmd = {
     addNewWebsite: "ANW",
+    printAllWebsites: "PrintALL",
     getWebsiteInfoById: /[0-9]+ GWebsite/,
     deleteWebsiteById: /[0-9]+ DeleteWebsite/,
     nextWebsitePage: /[0-9]+ NWebsitePage/,

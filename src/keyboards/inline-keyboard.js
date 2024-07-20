@@ -27,7 +27,7 @@ export const makeFromResponseInlineList = (response) => {
             }
             return [{ text: `${item.url} - ${sign}`, callback_data: `${item.id} GWebsite` }]
         });
-        
+
         const nextButton = Number(response.currentPage) + 1 > response.totalPages ? { text: '⏺' , callback_data: "nothing" } : { text: '➡️' , callback_data: `${Number(response.currentPage) + 1} NWebsitePage` }
         const prevButton = Number(response.currentPage) - 1 <= 0 ? { text: '⏺' , callback_data: "nothing" } : { text: '⬅️' , callback_data: `${response.currentPage - 1} PWebsitePage` }
         
@@ -36,7 +36,7 @@ export const makeFromResponseInlineList = (response) => {
             ...content,
             [
                 prevButton,
-                { text: '⏬', callback_data: "all" },
+                { text: '⏬', callback_data: inlineCmd.printAllWebsites },
                 nextButton,
             ]
         ]);

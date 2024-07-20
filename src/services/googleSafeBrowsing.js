@@ -21,14 +21,10 @@ const checkUrlSafety = async (url) => {
 
     try {
         const response = await axios.post(URL, requestBody);
-        if (response.data.matches) {
-            console.log('Threats found:', response.data.matches);
-        } else {
-            console.log('No threats found.');
-        }
+        return response.data.matches
     } catch (error) {
         console.error('Error checking URL:', error);
     }
 };
 
-checkUrlSafety(urlToCheck);
+export default checkUrlSafety;

@@ -14,6 +14,31 @@ export const getWebsitesList = async (ctx) => {
     }
 }
 
+export const showWebsitesList = async (ctx) => {
+    try {
+        ctx.answerCbQuery();
+        const elements = ctx.update.callback_query.message.reply_markup.inline_keyboard.filter(e => e.length == 1); elements.shift();
+        const result = elements.map(e => e[0].callback_data.split(' ')[0]);
+        for (const i in result) {
+            const site = await websitesService.getWebsiteById(result[i]);
+            let sign = "";
+            switch (site.isAlive) {
+                case true:
+                    sign = "✅"
+                    break
+                case false:
+                    sign = "❌"
+                    break
+                case null:
+                    sign = "⏳"
+            }
+            await ctx.reply(`${site.id} | ${sign}\n${site.url}`, Markup.inlineKeyboard([{ text: cmd.deleteWebsite, callback_data: `${site.id} DeleteWebsite` }]))
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 export const anotherPageInWebsitesList = async (ctx) => {
     try {
         const page = ctx.match[0].split(' ')[0];

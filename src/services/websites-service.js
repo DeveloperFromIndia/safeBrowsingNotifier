@@ -1,4 +1,7 @@
 import SiteModel from "../database/models/Other/site.js";
+import { Op } from 'sequelize';
+import checkUrlSafety from "./googleSafeBrowsing.js";
+import userService from "./user-service.js";
 
 class WebsitesService {
     addWebsite = async (url) => {
@@ -24,7 +27,7 @@ class WebsitesService {
             if (website) {
                 await website.destroy();
                 return true;
-            } 
+            }
             return null;
         } catch (error) {
             throw error;
@@ -51,6 +54,46 @@ class WebsitesService {
         }
 
     }
+    getTotalInfo = async () => {
+        try {
+            const active = await SiteModel.count({ where: { isAlive: true } });
+            const b = await SiteModel.count({ where: { isAlive: false } });
+            const c = await SiteModel.count({ where: { isAlive: null } });
+
+            return `✅ Активные: ${active}\n❌ Забаненные: ${b}\n⏳ Не проверенные: ${c}`;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    conductAudit = async () => {
+        try {
+            const sites = await SiteModel.findAll({
+                where: {
+                    isAlive: {
+                        [Op.or]: [true, null]
+                    }
+                }
+            });
+
+            let counter = 0;
+            for (const item of sites) {
+                const result = await checkUrlSafety(item.url);
+                if (!result) {
+                    item.isAlive = true;
+                } else {
+                    counter++;
+                    item.isAlive = false;
+                }
+                await item.save();
+            }
+
+            if (counter > 0) {
+                userService.notifyAllUsers(`Забанено ❌${counter} доменов.`);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 }
 
 export default new WebsitesService;

@@ -3,8 +3,8 @@ import { cmd } from '../utils/cmd.js';
 
 export const MainKeyboard = Markup.keyboard(
     [
+        [cmd.main],
         [cmd.websites],
-        [cmd.settings]
     ]
 ).resize();
 
