@@ -1,7 +1,15 @@
 import dotenv from 'dotenv'; dotenv.config();
-import { Scenes, session, Telegraf } from 'telegraf';
+import { 
+    Scenes, 
+    session, 
+    Telegraf
+} from 'telegraf';
 import { start } from './commands/main-commands.js';
-import { getWebsitesList } from './commands/websites-commands.js';
+import { 
+    deleteWebsiteById, 
+    getWebsiteById, 
+    getWebsitesList
+} from './commands/websites-commands.js';
 import { cmd, inlineCmd } from './utils/cmd.js';
 import {
     addNewWebsiteScene,
@@ -17,8 +25,11 @@ const setupBot = () => {
     bot.use(stage.middleware());
 
     bot.start(start);
-    bot.hears(cmd.websites, getWebsitesList)
-    bot.action(inlineCmd.addNewWebsite, addNewWebsiteSceneEnterCallback)
+    bot.hears(cmd.websites, getWebsitesList);
+    
+    bot.action(inlineCmd.addNewWebsite, addNewWebsiteSceneEnterCallback);
+    bot.action(inlineCmd.getWebsiteInfoById, getWebsiteById);
+    bot.action(inlineCmd.deleteWebsiteById, deleteWebsiteById);
 
     return bot;
 }

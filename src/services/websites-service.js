@@ -10,6 +10,26 @@ class WebsitesService {
             return newItem;
         }
     }
+    getWebsiteById = async (id) => {
+        try {
+            const website = await SiteModel.findOne({ where: { id: id } });
+            return website;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    deleteWebsiteById = async (id) => {
+        try {
+            const website = await SiteModel.findOne({ where: { id: id } });
+            if (website) {
+                await website.destroy();
+                return true;
+            } 
+            return null;
+        } catch (error) {
+            throw error;
+        }
+    }
     getWebsitesByPage = async (currentPage, count) => {
         try {
             const offset = (currentPage - 1) * count;
