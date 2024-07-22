@@ -76,19 +76,22 @@ class WebsitesService {
             });
 
             let counter = 0;
+            let unactiveWebsites = [];
             for (const item of sites) {
                 const result = await checkUrlSafety(item.url);
                 if (!result) {
                     item.isAlive = true;
                 } else {
                     counter++;
+                    unactiveWebsites.push(item.url);
                     item.isAlive = false;
                 }
                 await item.save();
             }
 
             if (counter > 0) {
-                userService.notifyAllUsers(`Забанено ❌${counter} доменов.`);
+                const text = `❌ Забанено ${counter} доменов.\n${unactiveWebsites.map(item => "\n" + item)}`
+                userService.notifyAllUsers(text);
             }
         } catch (error) {
             console.error(error);
