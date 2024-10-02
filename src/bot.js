@@ -17,6 +17,7 @@ import {
     addNewWebsiteScene,
     addNewWebsiteSceneEnterCallback
 } from './commands/scenes/websites-scenes.js';
+import websitesService from './services/websites-service.js';
 
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
@@ -45,6 +46,7 @@ const setupBot = () => {
     bot.action(inlineCmd.nextWebsitePage, anotherPageInWebsitesList);
     bot.action(inlineCmd.prevWebsitePage, anotherPageInWebsitesList);
     bot.action(inlineCmd.printAllWebsites, showWebsitesList);
+    bot.command("audit", websitesService.conductAudit);
 
     return bot;
 }
