@@ -61,7 +61,7 @@ class WebsitesService {
             const b = await SiteModel.count({ where: { isAlive: false } });
             const c = await SiteModel.count({ where: { isAlive: null } });
 
-            return `✅ Активные: ${active}\n❌ Забаненные: ${b}\n⏳ Не проверенные: ${c}`;
+            return `✅ Активные: ${active}\n❌ Отбракованные: ${b}\n⏳ Не проверенные: ${c}`;
         } catch (error) {
             console.error(error);
         }
