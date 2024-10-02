@@ -2,6 +2,7 @@ import SiteModel from "../database/models/Other/site.js";
 import { Op } from 'sequelize';
 import checkUrlSafety from "./googleSafeBrowsing.js";
 import userService from "./user-service.js";
+import DomainService from "./DomainService.js";
 
 class WebsitesService {
     addWebsite = async (url) => {
@@ -78,19 +79,30 @@ class WebsitesService {
             let counter = 0;
             let unactiveWebsites = [];
             for (const item of sites) {
+                const result_dns = await DomainService.dnsCheckStatus(item.url)
                 const result = await checkUrlSafety(item.url);
-                if (!result) {
+                if (!result && result_dns) {
                     item.isAlive = true;
                 } else {
                     counter++;
-                    unactiveWebsites.push(item.url);
+                    let err = ``;
+                    if(!result_dns) {
+                        err = `- Ошибка DNS\n`;
+                    }
+                    if(result) {
+                        err += "- Заблокирован поисковой системой";
+                    }
+                    
+                    unactiveWebsites.push({ url: item.url, err});
                     item.isAlive = false;
                 }
                 await item.save();
             }
 
             if (counter > 0) {
-                const text = `❌ Забанено ${counter} доменов.\n${unactiveWebsites.map(item => "\n" + item)}`
+                const text = `❌ В результате аудита ${counter} доменов отбраковано.\n${unactiveWebsites.map(item => {
+                    return `${item.url}\n${item.err}`; 
+                }).join('')}`; 
                 userService.notifyAllUsers(text);
             }
         } catch (error) {
