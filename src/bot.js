@@ -17,7 +17,7 @@ import {
     addNewWebsiteScene,
     addNewWebsiteSceneEnterCallback
 } from './commands/scenes/websites-scenes.js';
-import websitesService from './services/websites-service.js';
+import websitesService from './services/websitesService.js';
 
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);

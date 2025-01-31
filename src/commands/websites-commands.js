@@ -1,6 +1,6 @@
 import { Markup } from "telegraf";
 import { makeFromResponseInlineList } from "../keyboards/inline-keyboard.js";
-import websitesService from "../services/websites-service.js";
+import websitesService from "../services/websitesService.js";
 import { cmd } from "../utils/cmd.js";
 
 const countInPage = 10;

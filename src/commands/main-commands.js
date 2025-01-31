@@ -1,6 +1,6 @@
 import { MainKeyboard } from "../keyboards/main-keyboard.js"
-import UserService from "../services/user-service.js"
-import WebsitesService from "../services/websites-service.js";
+import UserService from "../services/userService.js"
+import WebsitesService from "../services/websitesService.js";
 
 export const start = async(ctx) => {
     const userMessage = ctx.message; 

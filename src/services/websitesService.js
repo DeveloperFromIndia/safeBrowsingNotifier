@@ -1,7 +1,7 @@
 import SiteModel from "../database/models/Other/site.js";
 import { Op } from 'sequelize';
 import checkUrlSafety from "./googleSafeBrowsing.js";
-import userService from "./user-service.js";
+import userService from "./userService.js";
 import DomainService from "./DomainService.js";
 
 class WebsitesService {
@@ -90,7 +90,7 @@ class WebsitesService {
                         err = `- Ошибка DNS\n`;
                     }
                     if(result) {
-                        err += "- Заблокирован поисковой системой";
+                        err += "- Заблокирован поисковой системой\n";
                     }
                     
                     unactiveWebsites.push({ url: item.url, err});
@@ -100,7 +100,7 @@ class WebsitesService {
             }
 
             if (counter > 0) {
-                const text = `❌ В результате аудита ${counter} доменов отбраковано.\n${unactiveWebsites.map(item => {
+                const text = `❌ В результате аудита ${counter} домен(ов) отбраковано.\n${unactiveWebsites.map(item => {
                     return `${item.url}\n${item.err}`; 
                 }).join('')}`; 
                 userService.notifyAllUsers(text);
