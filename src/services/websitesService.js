@@ -2,7 +2,7 @@ import SiteModel from "../database/models/Other/site.js";
 import { Op } from 'sequelize';
 import checkUrlSafety from "./googleSafeBrowsing.js";
 import userService from "./userService.js";
-import DomainService from "./DomainService.js";
+import DomainService from "./domainService.js";
 
 class WebsitesService {
     addWebsite = async (url) => {
