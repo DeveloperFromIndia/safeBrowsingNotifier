@@ -1,7 +1,7 @@
 import setupBot from './src/bot.js';
 import sequelize from './src/database/config.js';
 import initModels from "./src/database/models/relations.js"
-import websitesService from './src/services/websites-service.js';
+import websitesService from './src/services/websitesService.js';
 
 const models = initModels();
 (async function () {

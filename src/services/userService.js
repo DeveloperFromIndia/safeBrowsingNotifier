@@ -21,8 +21,11 @@ class UserService {
     async notifyAllUsers(text) {
         try {
             const users = await UserModel.findAll();
-            users.forEach(user => {
-                sendMessageToUser(user.telegramId, text)
+            users.forEach(async user => {
+                await sendMessageToUser(user.telegramId, text)
+                    .catch(err => {
+                        console.error(err);
+                    })
             });
         } catch (error) {
             console.error(error);
