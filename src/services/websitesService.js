@@ -40,7 +40,7 @@ class WebsitesService {
             if (!website)
                 return null;
 
-            if (website.telegramId != null && website.telegramId != telegramId)
+            if (website.telegramId != null || website.telegramId != telegramId)
                 return null;
 
             await website.destroy();
