@@ -21,7 +21,7 @@ const checkUrlSafety = async (url) => {
 
     try {
         const response = await axios.post(URL, requestBody);
-        return response.data.matches
+        return response.data.matches;
     } catch (error) {
         console.error('Error checking URL:', error);
     }

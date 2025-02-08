@@ -1,12 +1,11 @@
-import { Markup } from "telegraf";
-import { makeFromResponseInlineList } from "../keyboards/inline-keyboard.js";
+import { makeFromResponseInlineList, websiteInlineActions } from "../keyboards/inline-keyboard.js";
+import userService from "../services/userService.js";
 import websitesService from "../services/websitesService.js";
-import { cmd } from "../utils/cmd.js";
 
 const countInPage = 10;
 export const getWebsitesList = async (ctx) => {
     try {
-        const res = await websitesService.getWebsitesByPage(1, countInPage);
+        const res = await websitesService.getWebsitesByPage(1, countInPage, ctx.message.from.id);
         const [title, keyboard] = makeFromResponseInlineList(res)
         ctx.reply(title, keyboard)
     } catch (error) {
@@ -15,24 +14,16 @@ export const getWebsitesList = async (ctx) => {
 }
 
 export const showWebsitesList = async (ctx) => {
+    const telegramId = ctx.update.callback_query.from.id;
     try {
-        ctx.answerCbQuery();
+        await ctx.answerCbQuery();
         const elements = ctx.update.callback_query.message.reply_markup.inline_keyboard.filter(e => e.length == 1); elements.shift();
         const result = elements.map(e => e[0].callback_data.split(' ')[0]);
         for (const i in result) {
             const site = await websitesService.getWebsiteById(result[i]);
-            let sign = "";
-            switch (site.isAlive) {
-                case true:
-                    sign = "✅"
-                    break
-                case false:
-                    sign = "❌"
-                    break
-                case null:
-                    sign = "⏳"
-            }
-            await ctx.reply(`${site.id} | ${sign}\n${site.url}`, Markup.inlineKeyboard([{ text: cmd.deleteWebsite, callback_data: `${site.id} DeleteWebsite` }]))
+            const sign = websitesService.getWebsiteSign(site.isAlive);
+            const keyboard = websiteInlineActions({ websiteId: site.id, permissions: [site.telegramId == telegramId ? "holder" : "public"] })
+            await ctx.reply(`ID: ${site.id} ${sign}\nURL: ${site.url}`, keyboard);
         }
     } catch (error) {
         console.error(error);
@@ -40,12 +31,14 @@ export const showWebsitesList = async (ctx) => {
 }
 
 export const anotherPageInWebsitesList = async (ctx) => {
+    const { id, username } = ctx.update.callback_query.from;
+    await userService.firstStart(id, username);
     try {
         const page = ctx.match[0].split(' ')[0];
-        const res = await websitesService.getWebsitesByPage(page, countInPage)
-        ctx.answerCbQuery();
+        const res = await websitesService.getWebsitesByPage(page, countInPage, id)
+        await ctx.answerCbQuery();
         const [title, keyboard] = makeFromResponseInlineList(res)
-        ctx.editMessageText(title, keyboard);
+        await ctx.editMessageText(title, keyboard);
     } catch (error) {
         console.error(error);
     }
@@ -53,6 +46,7 @@ export const anotherPageInWebsitesList = async (ctx) => {
 
 export const getWebsiteById = async (ctx) => {
     try {
+        const telegramId = ctx.update.callback_query.from.id;
         const websiteId = ctx.match[0].split(' ')[0];
 
         const website = await websitesService.getWebsiteById(websiteId);
@@ -60,18 +54,10 @@ export const getWebsiteById = async (ctx) => {
         if (website === null) {
             return await ctx.reply("Вебсайт не найден");
         }
-        let sign = "";
-        switch (website.isAlive) {
-            case true:
-                sign = "✅"
-                break
-            case false:
-                sign = "❌"
-                break
-            case null:
-                sign = "⏳"
-        }
-        await ctx.reply(`${website.id} | ${sign}\n${website.url}`, Markup.inlineKeyboard([{ text: cmd.deleteWebsite, callback_data: `${website.id} DeleteWebsite` }]))
+        let sign = websitesService.getWebsiteSign(website.isAlive);
+
+        const keyboard = websiteInlineActions({ websiteId: website.id, permissions: [website.telegramId == telegramId ? "holder" : "public"] })
+        await ctx.reply(`ID: ${website.id} ${sign}\nURL: ${website.url}`, keyboard);
     } catch (error) {
         console.error(error)
     }
@@ -82,10 +68,41 @@ export const deleteWebsiteById = async (ctx) => {
         const websiteId = ctx.match[0].split(' ')[0];
         const websiteActionResult = await websitesService.deleteWebsiteById(websiteId);
         if (websiteActionResult) {
-            ctx.answerCbQuery();
-            ctx.deleteMessage();
+            await ctx.answerCbQuery();
+            await ctx.deleteMessage();
         }
     } catch (error) {
         console.error(error);
     }
+}
+
+export const toggleSubscription = async (ctx) => {
+    try {
+        const { id, username } = ctx.update.callback_query.from;
+        await userService.firstStart(id, username);
+        const websiteId = ctx.match[0].split(' ')[0];
+
+        const res = await websitesService.toggleSubscription(websiteId, id);
+        ctx.answerCbQuery();
+        if (!res)
+            return await ctx.answerCbQuery("⚠️ Вебсайт не найден или у него уже появился владелец.", { show_alert: true });
+
+        const keyboard = websiteInlineActions({ websiteId, permissions: [id == res.telegramId ? "holder" : "public"] })
+        const sign = websitesService.getWebsiteSign(res.isAlive);
+        return await ctx.editMessageText(`ID: ${res.id} ${sign}\nURL: ${res.url}`, keyboard);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export const printAuditedList = async (ctx) => {
+    ctx.answerCbQuery();
+    const telegramId = ctx.update.callback_query.from.id;
+    const numbers = ctx.match[0].match(/\d+/g);
+    numbers.forEach(async websiteId => {
+        const site = await websitesService.getWebsiteById(websiteId);
+        const sign = websitesService.getWebsiteSign(site.isAlive);
+        const keyboard = websiteInlineActions({ websiteId: site.id, permissions: [site.telegramId == telegramId ? "holder" : "public"] })
+        await ctx.reply(`ID: ${site.id} ${sign}\nURL: ${site.url}`, keyboard);
+    });
 }

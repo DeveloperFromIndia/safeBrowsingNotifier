@@ -1,21 +1,24 @@
-import { Telegram } from "telegraf";
 import UserModel from "../database/models/Other/user.js";
 import { sendMessageToUser } from "../bot.js";
 
 class UserService {
-    async firstStart(userTelegramId, username) {
+    async firstStart(telegramId, username) {
         try {
             const user = await UserModel.findOrCreate({
-                where: { telegramId: userTelegramId },
+                where: { telegramId: telegramId },
                 defaults: {
                     username: username,
-                    telegramId: userTelegramId,
+                    telegramId: telegramId,
                 }
             });
             return user;
         } catch (error) {
             throw error;
         }
+    }
+    async getUser(telegramId) {
+        const user = await UserModel.findOne({ where: { telegramId } });
+        return user;
     }
 
     async notifyAllUsers(text) {

@@ -6,6 +6,7 @@ const config = new Sequelize(
         dialect: 'sqlite',
         storage: 'src/database/cartel.sqlite',
         logging: false, // dev
+        force: false,
         define: {
             freezeTableName: true,
             timestamps: false

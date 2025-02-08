@@ -6,6 +6,7 @@ import {
 } from "../../keyboards/main-keyboard.js";
 import { cmd } from "../../utils/cmd.js";
 import websitesService from "../../services/websitesService.js";
+import userService from "../../services/userService.js";
 
 const regexp = /^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|(\d{1,3}\.){3}\d{1,3})(:\d+)?(\/[^\s]*)?$/;
 
@@ -37,10 +38,12 @@ stepDataInput.on('text', async (ctx) => {
 
 const stepDataSave = new Composer();
 stepDataSave.on('text', async (ctx) => {
+    const { id, username } = ctx.message.from;
+    await userService.firstStart(id, username);
     if (ctx.update.message.text === cmd.saveSomething) {
         ctx.scene.state.value.forEach(async item => {
-            await websitesService.addWebsite(item);
-        });
+            await websitesService.addWebsite(item, id);
+        })
         await ctx.reply('Сохранено!');
         return ctx.scene.leave();
     } else {
