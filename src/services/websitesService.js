@@ -2,6 +2,7 @@ import SiteModel from "../database/models/Other/site.js";
 import { Op, Sequelize } from 'sequelize';
 import { sendMessageToUser } from "../bot.js";
 import { cmd } from "../utils/cmd.js";
+import domainService from "./domainService.js";
 
 class WebsitesService {
     getWebsiteSign = (alive) => {
@@ -134,7 +135,7 @@ class WebsitesService {
                 // dev
                 // const result_dns = false;
                 // const result = true;
-                const result_dns = await DomainService.dnsCheckStatus(item.url);
+                const result_dns = await domainService.dnsCheckStatus(item.url);
                 const result = await checkUrlSafety(item.url);
 
                 if (!result && result_dns) {

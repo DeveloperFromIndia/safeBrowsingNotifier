@@ -1,6 +1,6 @@
 import axios from "axios";
 
-class DomainService {
+class domainService {
 
     async dnsCheckStatus(domain) {
         try {
@@ -25,4 +25,4 @@ class DomainService {
     }
 }
 
-export default new DomainService;
+export default new domainService;
