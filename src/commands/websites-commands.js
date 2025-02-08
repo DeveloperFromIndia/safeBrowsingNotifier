@@ -65,12 +65,13 @@ export const getWebsiteById = async (ctx) => {
 
 export const deleteWebsiteById = async (ctx) => {
     try {
+        await ctx.answerCbQuery();
+
         const websiteId = ctx.match[0].split(' ')[0];
         const websiteActionResult = await websitesService.deleteWebsiteById(websiteId);
-        if (websiteActionResult) {
-            await ctx.answerCbQuery();
-            await ctx.deleteMessage();
-        }
+        if (!websiteActionResult)
+            await ctx.answerCbQuery("⚠️ Домен не найден или у него другой владелец", { show_alert: true });
+        await ctx.deleteMessage();
     } catch (error) {
         console.error(error);
     }
@@ -85,7 +86,7 @@ export const toggleSubscription = async (ctx) => {
         const res = await websitesService.toggleSubscription(websiteId, id);
         ctx.answerCbQuery();
         if (!res)
-            return await ctx.answerCbQuery("⚠️ Вебсайт не найден или у него уже появился владелец.", { show_alert: true });
+            return await ctx.answerCbQuery("⚠️ Домен не найден или у него уже появился владелец.", { show_alert: true });
 
         const keyboard = websiteInlineActions({ websiteId, permissions: [id == res.telegramId ? "holder" : "public"] })
         const sign = websitesService.getWebsiteSign(res.isAlive);

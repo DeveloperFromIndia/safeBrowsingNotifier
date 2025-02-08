@@ -34,14 +34,17 @@ class WebsitesService {
             console.error(error);
         }
     }
-    deleteWebsiteById = async (id) => {
+    deleteWebsiteById = async (id, telegramId) => {
         try {
             const website = await SiteModel.findOne({ where: { id: id } });
-            if (website) {
-                await website.destroy();
-                return true;
-            }
-            return null;
+            if (!website)
+                return null;
+
+            if (website.telegramId != null && website.telegramId != telegramId)
+                return null;
+
+            await website.destroy();
+            return true;
         } catch (error) {
             throw error;
         }
