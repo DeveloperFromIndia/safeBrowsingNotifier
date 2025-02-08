@@ -64,11 +64,12 @@ export const getWebsiteById = async (ctx) => {
 }
 
 export const deleteWebsiteById = async (ctx) => {
+    const telegramId = ctx.update.callback_query.from.id;
     try {
         await ctx.answerCbQuery();
 
         const websiteId = ctx.match[0].split(' ')[0];
-        const websiteActionResult = await websitesService.deleteWebsiteById(websiteId);
+        const websiteActionResult = await websitesService.deleteWebsiteById(websiteId, telegramId);
         if (!websiteActionResult)
             await ctx.answerCbQuery("⚠️ Домен не найден или у него другой владелец", { show_alert: true });
         await ctx.deleteMessage();

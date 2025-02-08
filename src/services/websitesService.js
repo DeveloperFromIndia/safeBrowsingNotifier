@@ -40,11 +40,12 @@ class WebsitesService {
             if (!website)
                 return null;
 
-            if (website.telegramId != null || website.telegramId != telegramId)
-                return null;
-
-            await website.destroy();
-            return true;
+            if (website.telegramId == telegramId || website.telegramId == null) {
+                await website.destroy();
+                return true;
+            }
+            
+            return null;
         } catch (error) {
             throw error;
         }
