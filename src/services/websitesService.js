@@ -3,6 +3,7 @@ import { Op, Sequelize } from 'sequelize';
 import { sendMessageToUser } from "../bot.js";
 import { cmd } from "../utils/cmd.js";
 import domainService from "./domainService.js";
+import checkUrlSafety from "./googleSafeBrowsing.js";
 
 class WebsitesService {
     getWebsiteSign = (alive) => {
@@ -88,7 +89,6 @@ class WebsitesService {
         } catch (error) {
             console.error(error);
         }
-
     }
     getTotalInfo = async (telegramId) => {
         try {
@@ -152,6 +152,7 @@ class WebsitesService {
 
                     unactiveWebsites.push({ id: item.id, url: item.url, err, telegramId: item.telegramId });
                     item.isAlive = false;
+                    item.cause = err;
                 }
                 await item.save();
             }

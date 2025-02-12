@@ -1,4 +1,4 @@
-import { makeFromResponseInlineList, websiteInlineActions } from "../keyboards/inline-keyboard.js";
+import { listWebsites, websiteInlineActions } from "../keyboards/inline-keyboard.js";
 import userService from "../services/userService.js";
 import websitesService from "../services/websitesService.js";
 
@@ -6,7 +6,7 @@ const countInPage = 10;
 export const getWebsitesList = async (ctx) => {
     try {
         const res = await websitesService.getWebsitesByPage(1, countInPage, ctx.message.from.id);
-        const [title, keyboard] = makeFromResponseInlineList(res)
+        const [title, keyboard] = listWebsites(res)
         ctx.reply(title, keyboard)
     } catch (error) {
         console.error(error);

@@ -9,7 +9,7 @@ const config = new Sequelize(
         force: false,
         define: {
             freezeTableName: true,
-            timestamps: false
+            timestamps: false,
         },
         
     }

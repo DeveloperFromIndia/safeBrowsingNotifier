@@ -1,6 +1,8 @@
+import util from "util";
 import { Markup } from "telegraf";
 import { cmd, inlineCmd } from "../utils/cmd.js";
 import websitesService from "../services/websitesService.js";
+import userService from "../services/userService.js";
 
 export const websiteInlineActions = ({ websiteId, permissions }) => {
     const buttons = [];
@@ -34,33 +36,50 @@ export const websiteInlineHolderActions = (websiteId) => {
     )
 }
 
-export const makeFromResponseInlineList = (response) => {
+const listAcitions = (currentPage, totalPages, prev, next) => {
+    const plug = { text: '⏺', callback_data: "nothing" };
+
+    const p = Number(currentPage) - 1 <= 0 ? plug : { text: '⬅️', callback_data: `${Number(currentPage) - 1} ${prev}` }
+    const n = Number(currentPage) + 1 > totalPages ? plug : { text: '➡️', callback_data: `${Number(currentPage) + 1} ${next}` }
+    return [p, n]
+}
+
+const listItem = (item, status, id, callback_data) => {
+    return [{ text: util.format("%s - %s", item, status), callback_data: `${id} ${callback_data}` }]
+}
+
+export const listWebsites = (response) => {
     try {
-        let title = "";
+        const { currentPage, totalPages, websites } = response;
+
+        let title = "🧌 Тут пока пусто";
         let keyboard = null;
 
-        if (response.totalPages === 0) {
-            title = "🧌 Тут пока пусто"
+        if (totalPages === 0) {
             keyboard = Markup.inlineKeyboard([{ text: cmd.addNewWebsite, callback_data: inlineCmd.addNewWebsite }]);
             return [title, keyboard];
         }
+        title = `Страница ${currentPage} из ${totalPages}`
 
-        title = `Страница ${response.currentPage} из ${response.totalPages}`
-        const content = response.websites.map(item => {
-            let sign = websitesService.getWebsiteSign(item.isAlive);
-            return [{ text: `${item.url} - ${sign}`, callback_data: `${item.id} GWebsite` }]
+        const content = websites.map(item => {
+            const { id, url, isAlive } = item;
+            return listItem(
+                url,
+                websitesService.getWebsiteSign(isAlive),
+                id,
+                "GWebsite"
+            )
         });
 
-        const nextButton = Number(response.currentPage) + 1 > response.totalPages ? { text: '⏺', callback_data: "nothing" } : { text: '➡️', callback_data: `${Number(response.currentPage) + 1} NWebsitePage` }
-        const prevButton = Number(response.currentPage) - 1 <= 0 ? { text: '⏺', callback_data: "nothing" } : { text: '⬅️', callback_data: `${response.currentPage - 1} PWebsitePage` }
+        const [p, n] = listAcitions(currentPage, totalPages, "PWebsitePage", "NWebsitePage");
 
         keyboard = Markup.inlineKeyboard([
             [{ text: cmd.addNewWebsite, callback_data: inlineCmd.addNewWebsite }],
             ...content,
             [
-                prevButton,
+                p,
                 { text: '⏬', callback_data: inlineCmd.printAllWebsites },
-                nextButton,
+                n,
             ]
         ]);
         return [title, keyboard];
@@ -68,3 +87,50 @@ export const makeFromResponseInlineList = (response) => {
         console.error(error);
     }
 }
+
+export const listUsers = (response) => {
+    try {
+        const { currentPage, totalPages, users } = response;
+
+        let title = "🧌 Тут пока пусто";
+        let keyboard = null;
+
+        if (totalPages === 0)
+            return [title, keyboard];
+
+
+        title = `Страница ${currentPage} из ${totalPages}`
+        const content = users.map(item => {
+            const { telegramId, username, access } = item;
+
+            return listItem(
+                username,
+                userService.getUserSign(access),
+                telegramId,
+                "GUser"
+            )
+        });
+
+        const [p, n] = listAcitions(currentPage, totalPages, "PUsersPage", "NUsersPage");
+
+        keyboard = Markup.inlineKeyboard([
+            ...content,
+            [
+                p,
+                n,
+            ]
+        ]);
+        return [title, keyboard];
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export const usersInlineActions = (telegramId) => {
+    return Markup.inlineKeyboard([
+        [{text: cmd.access[0], callback_data: `${telegramId} SUser 0`}],
+        [{text: cmd.access[1], callback_data: `${telegramId} SUser 1`}],
+        [{text: cmd.access[2], callback_data: `${telegramId} SUser 2`}],
+        [{text: cmd.access[3], callback_data: `${telegramId} SUser 3`}],
+    ]);
+};
