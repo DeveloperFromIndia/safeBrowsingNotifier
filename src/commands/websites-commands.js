@@ -37,6 +37,7 @@ export const anotherPageInWebsitesList = async (ctx) => {
         const page = ctx.match[0].split(' ')[0];
         const res = await websitesService.getWebsitesByPage(page, countInPage, id)
         await ctx.answerCbQuery();
+
         const [title, keyboard] = listWebsites(res)
         await ctx.editMessageText(title, keyboard);
     } catch (error) {

@@ -128,9 +128,9 @@ export const listUsers = (response) => {
 
 export const usersInlineActions = (telegramId) => {
     return Markup.inlineKeyboard([
-        [{text: cmd.access[0], callback_data: `${telegramId} SUser 0`}],
-        [{text: cmd.access[1], callback_data: `${telegramId} SUser 1`}],
-        [{text: cmd.access[2], callback_data: `${telegramId} SUser 2`}],
-        [{text: cmd.access[3], callback_data: `${telegramId} SUser 3`}],
+        [{ text: cmd.access[0], callback_data: `${telegramId} SUser 0` }],
+        [{ text: cmd.access[1], callback_data: `${telegramId} SUser 1` }],
+        [{ text: cmd.access[2], callback_data: `${telegramId} SUser 2` }],
+        [{ text: cmd.access[3], callback_data: `${telegramId} SUser 3` }],
     ]);
 };
