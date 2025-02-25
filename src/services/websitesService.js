@@ -22,18 +22,21 @@ class WebsitesService {
     }
     addWebsite = async (url, telegramId) => {
         const itemWithSameUrl = await SiteModel.findOne({ where: { url } });
-        if (itemWithSameUrl.telegramId != telegramId && itemWithSameUrl.telegramId != null) 
-            return null;
+        if (itemWithSameUrl) {
+            if (itemWithSameUrl.telegramId != telegramId && itemWithSameUrl.telegramId != null) 
+                return null;
+    
+            // if site is exists and be public
+            if (itemWithSameUrl.telegramId == null) {
+                itemWithSameUrl.telegramId = telegramId;
+                await itemWithSameUrl.save();
+                return itemWithSameUrl;
+            }
 
-        // if site is exists and be public
-        if (itemWithSameUrl.telegramId == null) {
-            itemWithSameUrl.telegramId = telegramId;
-            await itemWithSameUrl.save();
-            return itemWithSameUrl;
+        } else {
+            const newItem = await SiteModel.create({ url, telegramId });
+            return newItem;
         }
-
-        const newItem = await SiteModel.create({ url, telegramId });
-        return newItem;
     }
     getWebsiteById = async (id) => {
         try {
