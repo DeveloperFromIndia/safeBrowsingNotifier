@@ -7,35 +7,40 @@ import checkUrlSafety from "./googleSafeBrowsing.js";
 
 class WebsitesService {
     getWebsiteSign = (alive) => {
-        let sign = "";
         switch (alive) {
             case true:
-                sign = "✅"
-                break
+                return "✅"
             case false:
-                sign = "❌"
-                break
+                return "❌"
             case null:
-                sign = "⏳"
+                return "⏳"
         }
-        return sign;
     }
     addWebsite = async (url, telegramId) => {
-        const itemWithSameUrl = await SiteModel.findOne({ where: { url } });
-        if (itemWithSameUrl) {
-            if (itemWithSameUrl.telegramId != telegramId && itemWithSameUrl.telegramId != null) 
+        const existingWebsite = await SiteModel.findOne({ where: { url } });
+
+        if (existingWebsite) {
+            if (existingWebsite.telegramId && existingWebsite.telegramId !== telegramId)
                 return null;
-    
-            // if site is exists and be public
-            if (itemWithSameUrl.telegramId == null) {
-                itemWithSameUrl.telegramId = telegramId;
-                await itemWithSameUrl.save();
-                return itemWithSameUrl;
+
+            if (!existingWebsite.telegramId) {
+                existingWebsite.telegramId = telegramId;
+                await existingWebsite.save();
             }
 
-        } else {
-            const newItem = await SiteModel.create({ url, telegramId });
-            return newItem;
+            return existingWebsite;
+        }
+
+        return SiteModel.create({ url, telegramId });
+    }
+
+    getWebsiteBySomething = async ({ id, url }) => {
+        try {
+            const whereClause = id ? { id } : url ? { url } : null;
+            const website = await SiteModel.findOne({ where: whereClause });
+            return website;
+        } catch (error) {
+            console.error(error);
         }
     }
     getWebsiteById = async (id) => {
@@ -56,61 +61,61 @@ class WebsitesService {
                 await website.destroy();
                 return true;
             }
-            
+
             return null;
         } catch (error) {
             throw error;
         }
     }
-    getWebsitesByPage = async (currentPage, count, telegramId, options) => {
-        try {
-            const offset = (currentPage - 1) * count;
-            const totalWebsites = await SiteModel.count({
-                where: {
-                    [Op.or]: [
-                        { telegramId: telegramId },
-                        { telegramId: null }
-                    ]
-                }
-            });
-            const totalPages = Math.ceil(totalWebsites / count);
+    getWebsitesByPage = async (currentPage, count, telegramId, options, isPrivate = true) => {
+        const offset = (currentPage - 1) * count;
 
-            const websites = await SiteModel.findAll({
-                offset,
-                limit: count,
-                order: [
-                    [Sequelize.literal('CASE WHEN "telegramId" = :telegramId THEN 0 ELSE 1 END'), 'ASC'],
-                    [Sequelize.literal('CASE WHEN "isAlive" IS NULL THEN 0 WHEN "isAlive" = true THEN 1 ELSE 2 END'), 'ASC'],
-                    ['id', 'DESC']
-                ],
-                where: {
-                    [Op.or]: [
-                        { telegramId: telegramId },
-                        { telegramId: null }
-                    ]
-                },
-                replacements: { telegramId: telegramId } // Подставляем заданный telegramId в запрос
-            });
-            return {
-                totalPages,
-                currentPage,
-                websites,
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-    getTotalInfo = async (telegramId) => {
-        try {
-            const active = await SiteModel.count({ where: { isAlive: true, telegramId } });
-            const unacitve = await SiteModel.count({ where: { isAlive: false, telegramId } });
-            const underInspection = await SiteModel.count({ where: { isAlive: null, telegramId } });
-            const total = await SiteModel.count({ where: { telegramId } });
+        // Фильтрация по isAlive
+        const isAliveFilter = options.isAlive !== undefined ? { isAlive: options.isAlive } : {};
 
-            return `📁 Всего доменов: ${total}\n\n✅ Активные: ${active}\n❌ Отбракованные: ${unacitve}\n⏳ Не проверенные: ${underInspection}`;
-        } catch (error) {
-            console.error(error);
-        }
+        // Условие для публичных / приватных сайтов
+        const visibilityFilter = isPrivate ? { telegramId } : { telegramId: null };
+
+        // Общие условия
+        const whereCondition = {
+            [Op.and]: [
+                visibilityFilter,      // Приватные или публичные
+                isAliveFilter,         // Фильтр по isAlive (если передан)
+                options.where || {}    // Другие фильтры
+            ]
+        };
+
+        // Получаем общее количество сайтов
+        const totalWebsites = await SiteModel.count({ where: whereCondition });
+        const totalPages = Math.ceil(totalWebsites / count);
+
+        // Получаем список сайтов
+        const websites = await SiteModel.findAll({
+            offset,
+            limit: count,
+            order: [
+                [Sequelize.literal('CASE WHEN "telegramId" = :telegramId THEN 0 ELSE 1 END'), 'ASC'],
+                [Sequelize.literal('CASE WHEN "isAlive" IS NULL THEN 0 WHEN "isAlive" = true THEN 1 ELSE 2 END'), 'ASC'],
+                ['id', 'DESC']
+            ],
+            where: whereCondition,
+            replacements: { telegramId }
+        });
+
+        return { totalPages, currentPage, websites };
+    };
+
+    getDomainOverview = async (telegramId) => {
+        return [
+            // active
+            await SiteModel.count({ where: { isAlive: true, telegramId } }),
+            // unactive
+            await SiteModel.count({ where: { isAlive: false, telegramId } }),
+            // inspection 
+            await SiteModel.count({ where: { isAlive: null, telegramId } }),
+            // total
+            await SiteModel.count({ where: { telegramId } }),
+        ]
     }
     toggleSubscription = async (id, telegramId) => {
         try {

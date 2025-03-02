@@ -3,6 +3,7 @@ import { Markup } from "telegraf";
 import { cmd, inlineCmd } from "../utils/cmd.js";
 import websitesService from "../services/websitesService.js";
 import userService from "../services/userService.js";
+import { websiteView } from "../views/website/website.view.js";
 
 export const websiteInlineActions = ({ websiteId, permissions }) => {
     const buttons = [];
@@ -45,40 +46,38 @@ const listAcitions = (currentPage, totalPages, prev, next) => {
 }
 
 const listItem = (item, status, id, callback_data) => {
-    return [{ text: util.format("%s - %s", item, status), callback_data: `${id} ${callback_data}` }]
+    return [{ text: util.format("%s", item), callback_data: `${id} ${callback_data}` }]
 }
 
-export const listWebsites = (response) => {
+export const listWebsites = (response, options) => {
     try {
         const { currentPage, totalPages, websites } = response;
+        const title = `${options.status ? "🔒" : "🌐"} Страница ${currentPage} из ${totalPages}`
 
-        let title = "🧌 Тут пока пусто";
-        let keyboard = null;
-
-        if (totalPages === 0) {
-            keyboard = Markup.inlineKeyboard([{ text: cmd.addNewWebsite, callback_data: inlineCmd.addNewWebsite }]);
-            return [title, keyboard];
-        }
-        title = `Страница ${currentPage} из ${totalPages}`
-
-        const content = websites.map(item => {
-            const { id, url, isAlive } = item;
-            return listItem(
-                url,
-                websitesService.getWebsiteSign(isAlive),
-                id,
-                "GWebsite"
-            )
-        });
+        const content = totalPages < 1 ?
+            [
+                [{ text: "...", callback_data: "tmp " }]
+            ]
+            :
+            websites.map(item => {
+                const { id, url, isAlive } = item;
+                return listItem(
+                    url,
+                    websitesService.getWebsiteSign(isAlive),
+                    id,
+                    "GWebsite"
+                )
+            });
 
         const [p, n] = listAcitions(currentPage, totalPages, "PWebsitePage", "NWebsitePage");
 
-        keyboard = Markup.inlineKeyboard([
+
+        const keyboard = Markup.inlineKeyboard([
             [{ text: cmd.addNewWebsite, callback_data: inlineCmd.addNewWebsite }],
             ...content,
             [
                 p,
-                { text: '⏬', callback_data: inlineCmd.printAllWebsites },
+                { text: options.title, callback_data: inlineCmd.updateList },
                 n,
             ]
         ]);
@@ -128,9 +127,9 @@ export const listUsers = (response) => {
 
 export const usersInlineActions = (telegramId) => {
     return Markup.inlineKeyboard([
-        [{ text: cmd.access[0], callback_data: `${telegramId} SUser 0` }],
-        [{ text: cmd.access[1], callback_data: `${telegramId} SUser 1` }],
-        [{ text: cmd.access[2], callback_data: `${telegramId} SUser 2` }],
-        [{ text: cmd.access[3], callback_data: `${telegramId} SUser 3` }],
+        { text: cmd.access[0], callback_data: `${telegramId} SUser 0` },
+        { text: cmd.access[1], callback_data: `${telegramId} SUser 1` },
+        { text: cmd.access[2], callback_data: `${telegramId} SUser 2` },
+        { text: cmd.access[3], callback_data: `${telegramId} SUser 3` },
     ]);
 };

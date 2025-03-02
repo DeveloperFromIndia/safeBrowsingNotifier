@@ -4,24 +4,39 @@ import {
     session,
     Telegraf
 } from 'telegraf';
+
+// utils
+import { cmd, inlineCmd } from './utils/cmd.js';
+
+// services
+import websitesService from './services/websitesService.js';
+// commands
+import { 
+    anotherPageInUserList, 
+    changeUserAccessById, 
+    getUserById, 
+    getUsersList 
+} from './commands/user-command.js';
 import { start } from './commands/main-commands.js';
 import {
-    anotherPageInWebsitesList,
     deleteWebsiteById,
     getWebsiteById,
-    getWebsitesList,
     printAuditedList,
-    showWebsitesList,
     toggleSubscription,
 } from './commands/websites-commands.js';
-import { cmd, inlineCmd } from './utils/cmd.js';
+import { websiteOverview } from './commands/website/overview.js';
+// middleware
+import accessMiddleware from './middleware/access.midleware.js';
+// scenes
 import {
     addNewWebsiteScene,
     addNewWebsiteSceneEnterCallback
-} from './commands/scenes/websites-scenes.js';
-import websitesService from './services/websitesService.js';
-import { anotherPageInUserList, changeUserAccessById, getUserById, getUsersList } from './commands/user-command.js';
-import accessMiddleware from './middleware/access.midleware.js';
+} from './commands/website/scenes/add.scenes.js';
+import { 
+    searchWebsiteScene, 
+    searchWebsiteSceneEnterCallback 
+} from './commands/website/scenes/search.scenes.js';
+import { anotherPageInWebsitesList, getPrivateWebsitesList, getPublicWebsitesList, updateList } from './commands/website/list.js';
 
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
@@ -34,19 +49,22 @@ export const sendMessageToUser = async ({ chatId, message, options }) => {
     }
 };
 
-const stage = new Scenes.Stage([addNewWebsiteScene]);
+const stage = new Scenes.Stage([addNewWebsiteScene, searchWebsiteScene]);
 
 const setupBot = () => {
     bot.use(session());
     bot.use(stage.middleware());
 
     bot.start(start);
-    bot.hears(cmd.websites, accessMiddleware(2), getWebsitesList);
-    bot.hears(cmd.main, accessMiddleware(2), start);
-    bot.hears(cmd.users, accessMiddleware(3), getUsersList)
-
+    bot.hears(cmd.websites.title, accessMiddleware(2), websiteOverview);
+    // list
+    bot.action(inlineCmd.website.privateList, accessMiddleware(2), getPrivateWebsitesList);
+    bot.action(inlineCmd.website.publicList, accessMiddleware(2), getPublicWebsitesList);
+    bot.hears(cmd.users, accessMiddleware(3), getUsersList);
+    
     // website actions
     bot.action(inlineCmd.addNewWebsite, accessMiddleware(2), addNewWebsiteSceneEnterCallback);
+    bot.action(inlineCmd.searchWebsite, accessMiddleware(2), searchWebsiteSceneEnterCallback);
     bot.action(inlineCmd.getWebsiteInfoById, accessMiddleware(2), getWebsiteById);
     bot.action(inlineCmd.deleteWebsiteById, accessMiddleware(2), deleteWebsiteById);
     // users actions
@@ -55,10 +73,10 @@ const setupBot = () => {
     // users list 
     bot.action(inlineCmd.nextUserPage, accessMiddleware(3), anotherPageInUserList);
     bot.action(inlineCmd.prevUserPage, accessMiddleware(3), anotherPageInUserList);
-    // website list 
+
     bot.action(inlineCmd.nextWebsitePage, accessMiddleware(2), anotherPageInWebsitesList);
     bot.action(inlineCmd.prevWebsitePage, accessMiddleware(2), anotherPageInWebsitesList);
-    bot.action(inlineCmd.printAllWebsites, accessMiddleware(2), showWebsitesList);
+    bot.action(inlineCmd.updateList, accessMiddleware(2), updateList);
     // 
     bot.action(inlineCmd.subscribeSite, accessMiddleware(2), toggleSubscription);
     bot.action(inlineCmd.unsubscribeSite, accessMiddleware(2), toggleSubscription);

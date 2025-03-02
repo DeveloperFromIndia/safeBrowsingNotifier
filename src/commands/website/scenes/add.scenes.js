@@ -1,12 +1,12 @@
 import { Composer, Scenes } from "telegraf";
 import {
-    MainKeyboard,
     BackInMainMenuKeyboard,
     SceneUploadDataKeyboard
-} from "../../keyboards/main-keyboard.js";
-import { cmd } from "../../utils/cmd.js";
-import websitesService from "../../services/websitesService.js";
-import userService from "../../services/userService.js";
+} from "../../../keyboards/main-keyboard.js";
+import { cmd } from "../../../utils/cmd.js";
+import websitesService from "../../../services/websitesService.js";
+import userService from "../../../services/userService.js";
+import { UserKeyboard } from "../../../keyboards/main-keyboard.js";
 
 const regexp = /^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|(\d{1,3}\.){3}\d{1,3})(:\d+)?(\/[^\s]*)?$/;
 
@@ -58,6 +58,7 @@ export const addNewWebsiteScene = new Scenes.WizardScene(
     stepDataSave
 );
 
+addNewWebsiteScene.hears("/start", async (ctx) => ctx.scene.leave());
 addNewWebsiteScene.hears(cmd.backInMainMenu, async (ctx) => ctx.scene.leave());
-addNewWebsiteScene.leave(async (ctx) => ctx.reply('Главное меню', MainKeyboard));
-addNewWebsiteScene.enter(async (ctx) => await ctx.reply(`Введи ссылку\n\nможно несколько через перенос строки`, BackInMainMenuKeyboard));
+addNewWebsiteScene.leave(async (ctx) => ctx.reply('Главное меню', await UserKeyboard(ctx.from.id)));
+addNewWebsiteScene.enter(async (ctx) => await ctx.reply("📌 Введите ссылку на домен\n\n🔹 Можно указать несколько значений, разделяя их новой строкой.", BackInMainMenuKeyboard));

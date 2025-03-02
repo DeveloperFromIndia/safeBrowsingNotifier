@@ -11,11 +11,10 @@ export const UserKeyboard = async (telegramId) => {
 
     const accessLevels = [
         [
-            [cmd.main],
-            [cmd.websites]
+            [cmd.websites.title]
         ],
         [
-            [cmd.users]
+            [cmd.users],
         ]
     ]
 
@@ -25,14 +24,13 @@ export const UserKeyboard = async (telegramId) => {
             buttons = buttons.concat(accessLevels[i]);
         }
     }
-    
+
     return Markup.keyboard(buttons).resize();
 }
 
 export const MainKeyboard = Markup.keyboard(
     [
-        [cmd.main],
-        [cmd.websites],
+        [cmd.websites.title],
     ]
 ).resize();
 

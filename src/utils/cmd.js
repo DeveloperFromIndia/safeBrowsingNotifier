@@ -1,13 +1,17 @@
 export const cmd = {
-    main: "💾 Стастистика",
-    websites: "📁 Домены",
+    websites: {
+        title: "📁 Домены",
+        private: "📁 Мои домены",
+        public: "🌐 Публичные домены",
+    },
+
     // users
     users: "👤 Пользователи",
     access: {
-        0:"❌ Заблокировать",
-        1:"🔑 Анулировать права",
-        2:"📂 Доступ к доменам",
-        3:"👤 Доступ к пользователям",
+        0:"❌",
+        1:"🔑",
+        2:"📂",
+        3:"👤",
     },
     accessRequest: "🔑 Запросить доступ",
     // utils buttons
@@ -23,7 +27,14 @@ export const cmd = {
 
 export const inlineCmd = {
     addNewWebsite: "ANW",
+    searchWebsite: "SW",
+    website: { 
+        publicList: "publicList",
+        privateList: "privateList"
+    },
     printAllWebsites: "PrintALL",
+    updateList: "UpdateList",
+
     // User
     getUserInfoById: /[0-9]+ GUser/,
     setRole: /[0-9]+ SUser [0-9]+/,
@@ -35,6 +46,7 @@ export const inlineCmd = {
     deleteWebsiteById: /[0-9]+ DeleteWebsite/,
     giveUpWebsiteById: /[0-9]+ GiveUpWebsite/,
     // List
+
     nextWebsitePage: /[0-9]+ NWebsitePage/,
     prevWebsitePage: /[0-9]+ PWebsitePage/,
     // Subscriptions
