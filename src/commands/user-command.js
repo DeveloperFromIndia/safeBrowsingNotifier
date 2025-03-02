@@ -2,6 +2,7 @@ import { sendMessageToUser } from "../bot.js";
 import { listUsers, usersInlineActions } from "../keyboards/inline-keyboard.js";
 import userService from "../services/userService.js";
 import websitesService from "../services/websitesService.js";
+import { userView } from "../views/users/user.view.js";
 
 const countInPage = 10;
 export const getUsersList = async (ctx) => {
@@ -33,20 +34,22 @@ export const getUserById = async (ctx) => {
     const { id, username } = ctx.update.callback_query.from;
     await userService.firstStart(id, username);
     try {
-        ctx.answerCbQuery();
+        await ctx.answerCbQuery();
         const userTelegramId = ctx.match[0].split(' ')[0];
+        
         const user = await userService.getUser(userTelegramId);
-        const totalInfo = await websitesService.getTotalInfo(userTelegramId);
-        const profile = `${userService.getUserSign(user.access)} @${user.username} (${user.telegramId})\n\n${totalInfo}`
+        const userSign = userService.getUserSign(user.access);
 
-        return ctx.reply(profile, usersInlineActions(user.telegramId));
+        const totalInfo = await userView(userTelegramId, user.username, userSign);
+
+        return ctx.reply(totalInfo, usersInlineActions(user.telegramId));
     } catch (error) {
         console.error(error);
     }
 }
 
 export const changeUserAccessById = async (ctx) => {
-    ctx.answerCbQuery();
+    await ctx.answerCbQuery();
     const userTelegramId = ctx.match[0].split(' ')[0];
     const role = ctx.match[0].split(' ')[2];
     const user = await userService.getUser(userTelegramId);
@@ -57,10 +60,12 @@ export const changeUserAccessById = async (ctx) => {
     user.access = role;
     await user.save();
 
-    const totalInfo = await websitesService.getTotalInfo(userTelegramId); 
+    const userSign = userService.getUserSign(Number(role));
+    const totalInfo = await userView(userTelegramId, user.username, userSign);
+    
     try {
-        await ctx.editMessageText(`${userService.getUserSign(Number(role))} @${user.username} (${user.telegramId})\n\n${totalInfo}`, usersInlineActions(user.telegramId))
-        if (role == 0) 
+        await ctx.editMessageText(totalInfo, usersInlineActions(user.telegramId))
+        if (role == 0)
             return await sendMessageToUser({
                 chatId: userTelegramId,
                 message: "🎷Вы заблокированы🎺"
@@ -68,9 +73,9 @@ export const changeUserAccessById = async (ctx) => {
         await sendMessageToUser({
             chatId: userTelegramId,
             message: "✅ Ваши права доступа обновлены!\n\n" +
-                     "Напишите /start, чтобы узнать, какие новые возможности вам теперь доступны."
+                "Напишите /start, чтобы узнать, какие новые возможности вам теперь доступны."
         });
     } catch (error) {
-        
+
     }
 }

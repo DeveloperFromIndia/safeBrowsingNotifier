@@ -45,6 +45,10 @@ const listAcitions = (currentPage, totalPages, prev, next) => {
     return [p, n]
 }
 
+const listUserItem = (item, status, id, callback_data) => {
+    return [{ text: util.format("%s - %s", item, status), callback_data: `${id} ${callback_data}` }]
+}
+
 const listItem = (item, status, id, callback_data) => {
     return [{ text: util.format("%s", item), callback_data: `${id} ${callback_data}` }]
 }
@@ -102,7 +106,7 @@ export const listUsers = (response) => {
         const content = users.map(item => {
             const { telegramId, username, access } = item;
 
-            return listItem(
+            return listUserItem(
                 username,
                 userService.getUserSign(access),
                 telegramId,
