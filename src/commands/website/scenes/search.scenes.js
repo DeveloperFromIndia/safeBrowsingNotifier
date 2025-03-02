@@ -42,9 +42,16 @@ stepDataFind.on('text', async (ctx) => {
 
         if (website) {
             const sign = websitesService.getWebsiteSign(website.isAlive);
+            let permissions = [
+                website.telegramId == null
+                    ? "public"
+                    : website.telegramId == id
+                        ? "holder"
+                        : "nothing"
+            ]
             const keyboard = websiteInlineActions({
                 websiteId: website.id,
-                permissions: [website.telegramId == id ? "holder" : "public"]
+                permissions,
             });
             await ctx.reply(websiteView({ id: website.id, sign, url: website.url }), keyboard);
         } else {
@@ -54,7 +61,7 @@ stepDataFind.on('text', async (ctx) => {
 
     if (err.length > 0) {
         await ctx.reply(`❌ Не найдено:\n${err.map(e => `- ${e}`).join("\n")}`);
-    } 
+    }
 
     return ctx.scene.leave();
 });
@@ -66,7 +73,7 @@ export const searchWebsiteScene = new Scenes.WizardScene(
     stepDataFind
 );
 
-searchWebsiteScene.hears("/start", async (ctx) => ctx.scene.leave()); 
+searchWebsiteScene.hears("/start", async (ctx) => ctx.scene.leave());
 searchWebsiteScene.leave(async (ctx) => await ctx.reply('Поиск завершен ✅', await UserKeyboard(ctx.from.id)));
 searchWebsiteScene.hears(cmd.backInMainMenu, async (ctx) => ctx.scene.leave());
 searchWebsiteScene.enter(async (ctx) => await ctx.reply("📌 Введите ссылку на домен или его ID\n\n🔹 Можно указать несколько значений, разделяя их новой строкой.", BackInMainMenuKeyboard));

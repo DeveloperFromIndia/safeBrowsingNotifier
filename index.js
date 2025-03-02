@@ -12,7 +12,7 @@ const models = initModels();
         
         const bot = setupBot();
         bot.launch()
-        // setInterval(websitesService.conductAudit, 1 * 60 * 30 * 1000) // 30 min
+        setInterval(websitesService.conductAudit, 1 * 60 * 30 * 1000) // 30 min
         console.log("</ Bot launched successfully >")
     } catch (error) {
         console.error('Startup error: ', error)

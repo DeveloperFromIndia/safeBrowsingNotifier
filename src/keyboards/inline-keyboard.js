@@ -10,12 +10,12 @@ export const websiteInlineActions = ({ websiteId, permissions }) => {
 
     if (permissions.find(permission => permission == 'public')) {
         buttons.push([{ text: cmd.subsrcibeWebsite, callback_data: `${websiteId} subscribeSite` }]);
+        buttons.push([{ text: cmd.deleteWebsite, callback_data: `${websiteId} DeleteWebsite` }]);
     } else if (permissions.find(permission => permission == 'holder')) {
         buttons.push([{ text: cmd.unscribeWebsite, callback_data: `${websiteId} unsubscribeSite` }]);
+        buttons.push([{ text: cmd.deleteWebsite, callback_data: `${websiteId} DeleteWebsite` }]);
     }
-
-    buttons.push([{ text: cmd.deleteWebsite, callback_data: `${websiteId} DeleteWebsite` }]);
-
+    
     return Markup.inlineKeyboard(buttons);
 };
 
